@@ -1,4 +1,3 @@
-
 import os, shutil, glob
 
 def listar_desenhos(Acerv, types = ('\*.pdf', '\*.dxf', '\*.step')):
@@ -43,13 +42,13 @@ def billing_folders(acervo, destino, lista):
     def copiar_arquivos_solda_conjuntos(lista_hierarquizada, destino):
         # Primeiro, criar o caminho à pasta destino.
         # Em seguida, coletar o que precisa ser copiado.
-        nome_pasta = lista_hierarquizada[0]['nome_arquivo'] + " - " + lista_hierarquizada[0]['TIPO DO ITEM']
+        nome_pasta = lista_hierarquizada[0]['NOME_ARQUIVO'] + " - " + lista_hierarquizada[0]['TIPO DO ITEM']
         full_path = os.path.join(destino, nome_pasta)
         if not os.path.exists(full_path):
             os.makedirs(full_path)
-            print(f"Pasta '{lista_hierarquizada[0]['nome_arquivo']}' criada com sucesso em '{destino}'.")
+            print(f"Pasta '{lista_hierarquizada[0]['NOME_ARQUIVO']}' criada com sucesso em '{destino}'.")
         else:
-            print(f"Pasta '{lista_hierarquizada[0]['nome_arquivo']}' já existe em '{destino}'.")
+            print(f"Pasta '{lista_hierarquizada[0]['NOME_ARQUIVO']}' já existe em '{destino}'.")
         # A recursão ali serve para tratar de subconjuntos correspondentemente.
         copiar = []
         for item in lista_hierarquizada:
@@ -61,12 +60,17 @@ def billing_folders(acervo, destino, lista):
         # Finalmente, copiar os arquivos à pasta de destino.
         for file in arquivos_acervo:
             for item in copiar:
-                if item['nome_arquivo'] in file:
+                if item['NOME_ARQUIVO'] in file:
                     try:
                         shutil.copy(file, full_path)
+                        if "COPIADO" not in item:
+                            item["COPIADO"] = 1
+                        else:
+                            item["COPIADO"] += 1
                     except: #Se o arquivo já existir no destino, pular.
                         print(f"did not copy {file}")
-                        pass
+                        if "COPIADO" not in item:
+                            item["COPIADO"] = 0  # Initialize if not present
         return
     
     def copiar_arquivos_solda_avulsos(lista_avulsos, destino):
@@ -74,11 +78,12 @@ def billing_folders(acervo, destino, lista):
         # Em seguida, coletar o que precisa ser copiado.
         for file in arquivos_acervo:
             for item in lista_avulsos:
-                if item['nome_arquivo'] in file:
+                if item['NOME_ARQUIVO'] in file:
                     try:
                         shutil.copy(file, destino)
+                        item.update({"COPIADO" : "SIM"})
                     except: #Se o arquivo já existir no destino, pular.
-                        pass
+                        item.update({"COPIADO" : "NÃO"})
         return
     
     # Obter arquivos do acervo.
@@ -86,7 +91,7 @@ def billing_folders(acervo, destino, lista):
     
     # Gerar nomes.
     for item in lista:
-        item.update({"nome_arquivo" : (item["SAP"] + " - " + item["DESENHO"])})
+        item.update({"NOME_ARQUIVO" : (item["SAP"] + " - " + item["DESENHO"])})
     
     # Obter os conjuntos da lista (que interessam).
     conjuntos = [linha for linha in lista if str(linha["SAP"]).startswith("520-")]
@@ -109,5 +114,7 @@ def billing_folders(acervo, destino, lista):
     
     for conjunto in conjuntos:
         copiar_arquivos_solda_conjuntos(conjunto, destino)
+    
+    copiar_arquivos_solda_avulsos(avulsos, destino)
         
     return conjuntos + avulsos

@@ -25,7 +25,7 @@ if __name__ == "__main__":
     df.to_excel(tpc.test_file_path('players.xlsx'), index=True)
     
     acervo = r"C:\Users\projeto6\Desktop\Desktop 2\Documentos\Acervo"
-    destino = r"C:\Users\projeto6\Desktop\Desktop 2\Documentos\Destino2"
+    destino = r"./Destino"
 
     lista_billing = tb.billing_folders(acervo, destino, data_list)
     lista_billing_solved = solve_hierarchy_in_list(lista_billing)
