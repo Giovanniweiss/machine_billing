@@ -13,7 +13,6 @@ def listar_desenhos(Acerv, types = ('\*.pdf', '\*.dxf', '\*.step')):
     return files_grabbed
 
 
-
 def exportar_para_excel(nome_arquivo, lista, nomes_abas = None):
     #Código padrão para exportar listas de dicionários para excel.
 
@@ -33,7 +32,6 @@ def exportar_para_excel(nome_arquivo, lista, nomes_abas = None):
                 j.to_excel(writer, sheet_name=nomes_abas[index])
     
     return 0
-
 
 
 def extrairdados(arquivo):
@@ -56,7 +54,6 @@ def extrairdados(arquivo):
     else:
         raise Exception("""Arquivo inválido para extração de dados.""")
     return csv_mapping_list
-
 
 
 def remove_and_replace_delimiters(input_file, output_file, old_delimiter, new_delimiter):
@@ -85,7 +82,6 @@ def remove_and_replace_delimiters(input_file, output_file, old_delimiter, new_de
         print('Invalid file path.')
 
 
-
 def filtrar_por_padroes_sap(SAPs):
     patterns = [r"^\d{3}-\d{5}$",
             r"^\d{3}-\d{6}$",
@@ -105,7 +101,6 @@ def filtrar_por_padroes_sap(SAPs):
                         if any(re.match(pattern, value) 
                         for pattern in patterns)]
     return filtered_values
-
 
 
 def copiar_arquivos3(Destn, files_grabbed, lista):
@@ -148,6 +143,7 @@ def copiar_arquivos3(Destn, files_grabbed, lista):
     exportarexcel.T.to_excel(excelname, sheet_name='sheet1', index=True)
 
     return 0
+
 
 def separar_grupos_desenhos(Pasta, Destino):
 
@@ -259,129 +255,6 @@ def separar_grupos_desenhos(Pasta, Destino):
     print(f"{totalcounter} files copied successfully.")
     print(f"{failedcounter} files failed to copy.")
     return 0
-
-
-
-def pasta_de_solda(Destn, files_grabbed, lista, nome_projeto="padrao"):
-    #Check input
-    if lista == []:
-        return 1
-    
-    #Variables
-    Dateformat = re.compile(r'\d\d/\d\d/\d\d\d\d')
-    csv_output = []
-    Destn = Destn + r"\solda_interna"
-    
-    #ETAPA 1: Obter os SAPs e descrições dos conjuntos de solda interna.
-    List_filtered = [i for i in lista if (i['TIPO DO ITEM'] == "Soldado Internamente")]
-    List_filtered = [i for i in List_filtered if i['SAP']]
-
-    #ETAPA 2: Obter os PDFs dos SAPs obtidos.
-    pdfFiles = files_grabbed
-    for entry in List_filtered:
-        sap_value = entry['SAP']
-        matching_files = [file for file in pdfFiles if (str(sap_value) + ' -') in Path(file).stem]
-        if matching_files:
-            # If a matching file is found, add the 'filepath' key to the dictionary
-            entry['filepath'] = matching_files[0]  # Assuming there's only one matching file
-    
-    #ETAPA 3: Obter, dos PDFs, a quantidade de páginas de cada PDF e data.
-    pdf_unificado = PyPDF2.PdfMerger()
-
-    for num, current_file in enumerate(List_filtered):
-        if current_file['filepath']:
-            with open(current_file['filepath'], 'rb') as pdfFileObj:
-                pdfReader = PyPDF2.PdfReader(pdfFileObj)
-                pageObj = pdfReader.pages[0]
-                
-                text = pageObj.extract_text()
-
-                #Get all the dates.
-                all_dates = re.findall(Dateformat, text)
-                date_objects = [datetime.strptime(date, '%d-%m-%Y') for date in all_dates]
-                Date = max(date_objects)
-
-                #Old Method - Does not work because only gets first date.
-                #Date = Dateformat.search(text).group()
-
-                for i, data in enumerate(pdfReader.pages):
-                    Pages = (str(num+1) + '.' + str(i+1))
-                    #Dados para Etapa 5.
-                    file = {
-                        'Pages'       : Pages,
-                        'Date'        : Date,
-                        'Description' : current_file['DESCRIÇÃO'],
-                        'SAP'         : current_file['SAP']
-                    }
-                    csv_output.append(file)
-                pdf_unificado.append(pdfFileObj)
-        else:
-            file = {
-                'Pages'       : 'Arquivo não encontrado',
-                'Date'        : '0',
-                'Description' : current_file['DESCRIÇÃO'],
-                'SAP'         : current_file['SAP']
-            }
-            csv_output.append(file)
-
-    #ETAPA 4: Unir todos os PDFs num único arquivo de saída.
-    with open(Destn + nome_projeto + '.pdf', 'wb') as output:
-        pdf_unificado.write(output)
-
-    #ETAPA 5: Preparar a planilha com a relação de desenhos. Incluir:
-    #	Nome do projeto (pedir ao usuário), data de hoje.
-    #	SAP do desenho, revisão, descrição, data do desenho.
-    if len(csv_output) > 0:
-        with open(Destn + nome_projeto + ".csv", 'w', newline='') as csv_file:
-            # Create a CSV writer object
-            csv_writer = csv.DictWriter(csv_file, fieldnames=csv_output[0].keys())
-
-            # Write the header to the CSV file
-            csv_writer.writeheader()
-
-            #ETAPA 6: Salvar a planilha.
-            # Write each dictionary as a row in the CSV file
-            csv_writer.writerows(csv_output)
-
-
-
-def descaracterizar_lista(lista):
-    # Descaracteriza uma lista, dando valores aleatórios que não tem referência a projeto.
-    # Dá para adicionar uma função que adiciona SAPs múltiplas vezes.
-    tag_Cod_MP  = "COD.MP"
-    tag_Cod_SAP = "SAP"
-    tag_MP_ext  = "MP EXTENSO"
-    tag_Desenho = "DESENHO"
-    tag_Desc    = "DESCRIÇÃO"
-    tag_Comp    = "COMP."
-    tag_Larg    = "LARGURA"
-    tag_Peso    = "PESO KG"
-
-    # Número de elementos para substituir em MP e SAP.
-    tamanho = range(1,len(lista)*2)
-    elementos = random.sample(tamanho, len(tamanho))
-
-    # Adiciona zeros conforme nosso padrao.
-    elementos = [str(i).zfill(6) for i in elementos]
-
-    # Loop principal. Substitui valores com outros gerados.
-    for index, values in enumerate(lista):
-        if values[tag_Cod_MP]:
-            values[tag_Cod_MP] = values[tag_Cod_MP][0:4] + elementos[index]
-        if values[tag_Cod_SAP]:
-            values[tag_Cod_SAP] = values[tag_Cod_SAP][0:4] + elementos[index]
-        if values[tag_MP_ext]:
-            values[tag_MP_ext] = "MP GENÉRICA" + " " + str(index)
-
-        # Não precisa checar esses. Melhor preencher tudo para descaracterizar.
-        values[tag_Desenho] = "DESENHO GENÉRICO" + " " + str(index)
-        values[tag_Desc] = "DESCRIÇÃO GENÉRICA" + " " + str(index)
-        values[tag_Comp] = random.randint(1,2000)
-        values[tag_Larg] = random.randint(1,2000)
-        values[tag_Peso] = random.uniform(1,100)
-
-        # Tipo do item, Acab. Superficial e QTD são mantidos.
-    return lista
 
 
 def comparar_listas(lista_velha, 
@@ -512,8 +385,6 @@ def orcamentacao(lista):
     for index, row in enumerate(lista_filt):
         pass
         
-        
-        
     return lista
 
 
@@ -598,20 +469,6 @@ def pastas_de_orc(acervo, destino, lista):
         Criar uma cópia da lista de orçamento na pasta base do destino.
     '''
     
-    # Obter arquivos do acervo.
-    arquivos_acervo = listar_desenhos(acervo)
-    
-    # Gerar nomes.
-    for item in lista:
-        item.update({"nome_arquivo" : (item["SAP"] + " - " + item["DESENHO"])})
-    
-    # Obter os conjuntos da lista (que interessam).
-    conjuntos = [linha for linha in lista if linha["TIPO"] == "Conjunto"]
-    avulsos = [linha for linha in lista if linha["TIPO"] == "Avulso"]
-    
-    # Output esperado: dicionário com níveis relativos ao nome das pastas.
-    # Hierarquizar a lista.
-    # Nessa etapa, o objetivo é transformar subconjuntos dentro da lista de dict de cada conjunto em sublistas de dict, recursivamente.
     def rec_hierarquizar(conjunto, itens_do_conjunto):
         adicionados = []
         output = []
@@ -668,6 +525,17 @@ def pastas_de_orc(acervo, destino, lista):
                     except: #Se o arquivo já existir no destino, pular.
                         pass
         return
+    
+    # Obter arquivos do acervo.
+    arquivos_acervo = listar_desenhos(acervo)
+    
+    # Gerar nomes.
+    for item in lista:
+        item.update({"nome_arquivo" : (item["SAP"] + " - " + item["DESENHO"])})
+    
+    # Obter os conjuntos da lista (que interessam).
+    conjuntos = [linha for linha in lista if linha["TIPO"] == "Conjunto"]
+    avulsos = [linha for linha in lista if linha["TIPO"] == "Avulso"]
     
     for index, linha in enumerate(conjuntos):
         itens_no_conjunto = [item for item in lista if item["Nível"].startswith(linha["Nível"] + ".") and item != linha]
