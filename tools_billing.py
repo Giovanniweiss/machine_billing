@@ -7,18 +7,28 @@ def listar_desenhos(Acerv, types = ('\*.pdf', '\*.dxf', '\*.step')):
          files_grabbed.extend(glob.glob(Acerv + files, recursive=True))
     return files_grabbed
 
-def billing_folders(acervo, destino, lista):
+
+def solve_hierarchy_in_list(lista):
+    output = []
+    for item in lista:
+        if type(item) == list:
+            output.extend(solve_hierarchy_in_list(item))
+        else:
+            output.append(item)
+    return output
+
+
+def billing_folders_and_list(acervo, destino, lista):
     '''
     Input:
         Acervo - local onde os arquivos estão armazenados. Deve ser um string com endereço de pasta.
         Destino - local onde serão criadas as pastas de orçamento. Deve ser um string com endereço de pasta.
-        Lista - lista de orçamento, gerada de acordo com as diretrizes da empresa. Deve ser um list de dicts.
-            A lista de orçamento deve estar dividida em conjuntos, subconjuntos e avulsos, obrigatóriamente, e agrupada corretamente.
+        Lista - lista de materiais recuada conforme gerada pelo PDM, formatada como lista de dicionários. Processar com hex_cleanup antes.
     
     Output esperado:
-        Diversas pastas, cada uma com nome em formato SAP - SÉRIE, contendo os arquivos .PDF, .DXF e .STEP dos arquivos do projeto.
-        Se aplicável, devem haver subpastas também.
-        Criar uma cópia da lista de orçamento na pasta base do destino.
+        Diversas pastas, cada uma com nome em formato SAP - SÉRIE - TIPO DE ITEM, contendo os arquivos .PDF, .DXF e .STEP dos arquivos do projeto.
+        Se aplicável, devem haver subpastas também, de acordo com a estrutura hierarquica definida em projeto.
+        Exportar uma lista de orçamento.
     '''
     
     def rec_hierarquizar(conjunto, itens_do_conjunto):
@@ -63,14 +73,10 @@ def billing_folders(acervo, destino, lista):
                 if item['NOME_ARQUIVO'] in file:
                     try:
                         shutil.copy(file, full_path)
-                        if "COPIADO" not in item:
-                            item["COPIADO"] = 1
-                        else:
-                            item["COPIADO"] += 1
+                        item.update({"COPIADO" : "SIM"})
                     except: #Se o arquivo já existir no destino, pular.
                         print(f"did not copy {file}")
-                        if "COPIADO" not in item:
-                            item["COPIADO"] = 0  # Initialize if not present
+                        item.update({"COPIADO" : "NÃO"})
         return
     
     def copiar_arquivos_solda_avulsos(lista_avulsos, destino):
@@ -107,7 +113,7 @@ def billing_folders(acervo, destino, lista):
         
     conjuntos = [i for i in conjuntos if i != None]
     avulsos = []
-    tolerated_SAPs = ["110-", "140-"]
+    tolerated_SAPs = ["110-", "120-", "140-"]
     for j in tolerated_SAPs:
         k = [i for i in lista if i not in adicionados and str(i['SAP']).startswith(j)]
         avulsos.extend(k)

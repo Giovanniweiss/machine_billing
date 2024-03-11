@@ -2,16 +2,6 @@ import tools_process_csv as tpc
 import tools_billing as tb
 import pandas as pd
 
-def solve_hierarchy_in_list(lista):
-    output = []
-    for item in lista:
-        if type(item) == list:
-            output.extend(solve_hierarchy_in_list(item))
-        else:
-            output.append(item)
-    return output
-
-# Main function
 if __name__ == "__main__":
     path = "./test_files/"
     file_path = tpc.test_file_path("wtf.csv")
@@ -27,8 +17,8 @@ if __name__ == "__main__":
     acervo = r"C:\Users\projeto6\Desktop\Desktop 2\Documentos\Acervo"
     destino = r"./Destino"
 
-    lista_billing = tb.billing_folders(acervo, destino, data_list)
-    lista_billing_solved = solve_hierarchy_in_list(lista_billing)
+    lista_billing = tb.billing_folders_and_list(acervo, destino, data_list)
+    lista_billing_solved = tb.solve_hierarchy_in_list(lista_billing)
     
     df2 = pd.DataFrame.from_dict(lista_billing_solved)
     df2.to_excel(tpc.test_file_path('players2.xlsx'), index=True)
