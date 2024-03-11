@@ -100,9 +100,14 @@ def billing_folders(acervo, destino, lista):
         else:
             conjuntos[index] = None
         
-    conjunto = [i for i in conjuntos if i != None]
+    conjuntos = [i for i in conjuntos if i != None]
+    avulsos = []
+    tolerated_SAPs = ["110-", "140-"]
+    for j in tolerated_SAPs:
+        k = [i for i in lista if i not in adicionados and str(i['SAP']).startswith(j)]
+        avulsos.extend(k)
     
     for conjunto in conjuntos:
         copiar_arquivos_solda_conjuntos(conjunto, destino)
         
-    return
+    return conjuntos + avulsos
