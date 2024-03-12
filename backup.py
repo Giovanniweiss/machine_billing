@@ -1,11 +1,13 @@
 import tools_process_csv as tpc
 import tools_billing as tb
+import tools_gui as tg
 import pandas as pd
 
 if __name__ == "__main__":
+    
+    lista, destino, acervo, pastas_de_solda, solda_usinados_externa = tg.abrir_GUI()
     # Abertura, importação e limpeza de csv do PDM.
-    path = "./test_files/"
-    file_path = tpc.test_file_path("wtf.csv")
+    file_path = lista
     tpc.hex_cleanup(file_path)
     data_list = tpc.load_csv_to_list_of_dicts(file_path)
     if data_list is not None:
@@ -15,9 +17,6 @@ if __name__ == "__main__":
     df = pd.DataFrame.from_dict(data_list)
     df.to_excel(tpc.test_file_path('players.xlsx'), index=True)
     
-    acervo = r"C:\Users\projeto6\Desktop\Desktop 2\Documentos\Acervo"
-    destino = r"./Destino"
-
     # Processamento 
     lista_billing, lista_avulsos, adicionados = tb.billing_folders_and_list(data_list)
     for conjunto in lista_billing:
