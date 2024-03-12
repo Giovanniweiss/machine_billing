@@ -72,7 +72,7 @@ def billing_folders_and_list(lista):
     for item in avulsos:
         item.update({"CATEGORIA" : "Avulso"})
         
-    return conjuntos, avulsos, adicionados
+    return conjuntos, avulsos
 
 
 # Copiar os arquivos às pastas de destino, recursivamente.
