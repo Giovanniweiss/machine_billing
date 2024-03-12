@@ -48,50 +48,6 @@ def billing_folders_and_list(acervo, destino, lista):
                 adicionados.append(i)
         return output, adicionados
     
-    # Copiar os arquivos às pastas de destino, recursivamente.
-    def copiar_arquivos_solda_conjuntos(lista_hierarquizada, destino):
-        # Primeiro, criar o caminho à pasta destino.
-        # Em seguida, coletar o que precisa ser copiado.
-        nome_pasta = lista_hierarquizada[0]['NOME_ARQUIVO'] + " - " + lista_hierarquizada[0]['TIPO DO ITEM']
-        full_path = os.path.join(destino, nome_pasta)
-        if not os.path.exists(full_path):
-            os.makedirs(full_path)
-            print(f"Pasta '{lista_hierarquizada[0]['NOME_ARQUIVO']}' criada com sucesso em '{destino}'.")
-        else:
-            print(f"Pasta '{lista_hierarquizada[0]['NOME_ARQUIVO']}' já existe em '{destino}'.")
-        # A recursão ali serve para tratar de subconjuntos correspondentemente.
-        copiar = []
-        for item in lista_hierarquizada:
-            if isinstance(item, list):
-                copiar_arquivos_solda_conjuntos(item, full_path)
-            else:
-                copiar.append(item)
-            
-        # Finalmente, copiar os arquivos à pasta de destino.
-        for file in arquivos_acervo:
-            for item in copiar:
-                if item['NOME_ARQUIVO'] in file:
-                    try:
-                        shutil.copy(file, full_path)
-                        item.update({"COPIADO" : "SIM"})
-                    except: #Se o arquivo já existir no destino, pular.
-                        print(f"did not copy {file}")
-                        item.update({"COPIADO" : "NÃO"})
-        return
-    
-    def copiar_arquivos_solda_avulsos(lista_avulsos, destino):
-        # Primeiro, criar o caminho à pasta destino.
-        # Em seguida, coletar o que precisa ser copiado.
-        for file in arquivos_acervo:
-            for item in lista_avulsos:
-                if item['NOME_ARQUIVO'] in file:
-                    try:
-                        shutil.copy(file, destino)
-                        item.update({"COPIADO" : "SIM"})
-                    except: #Se o arquivo já existir no destino, pular.
-                        item.update({"COPIADO" : "NÃO"})
-        return
-    
     # Obter arquivos do acervo.
     arquivos_acervo = listar_desenhos(acervo)
     
@@ -117,13 +73,58 @@ def billing_folders_and_list(acervo, destino, lista):
     for j in tolerated_SAPs:
         k = [i for i in lista if i not in adicionados and str(i['SAP']).startswith(j)]
         avulsos.extend(k)
-    
-    for conjunto in conjuntos:
-        copiar_arquivos_solda_conjuntos(conjunto, destino)
-    
-    copiar_arquivos_solda_avulsos(avulsos, destino)
         
-    return conjuntos + avulsos
+    return conjuntos, avulsos
+
+
+# Copiar os arquivos às pastas de destino, recursivamente.
+def copiar_arquivos_solda_conjuntos(acervo, destino, lista_hierarquizada = None):
+    if lista_hierarquizada == None:
+        return 0
+    arquivos_acervo = listar_desenhos(acervo)
+    # Primeiro, criar o caminho à pasta destino.
+    # Em seguida, coletar o que precisa ser copiado.
+    nome_pasta = lista_hierarquizada[0]['NOME_ARQUIVO'] + " - " + lista_hierarquizada[0]['TIPO DO ITEM']
+    full_path = os.path.join(destino, nome_pasta)
+    if not os.path.exists(full_path):
+        os.makedirs(full_path)
+        print(f"Pasta '{lista_hierarquizada[0]['NOME_ARQUIVO']}' criada com sucesso em '{destino}'.")
+    else:
+        print(f"Pasta '{lista_hierarquizada[0]['NOME_ARQUIVO']}' já existe em '{destino}'.")
+    # A recursão ali serve para tratar de subconjuntos correspondentemente.
+    copiar = []
+    for item in lista_hierarquizada:
+        if isinstance(item, list):
+            copiar_arquivos_solda_conjuntos(item, full_path)
+        else:
+            copiar.append(item)
+        
+    # Finalmente, copiar os arquivos à pasta de destino.
+    for file in arquivos_acervo:
+        for item in copiar:
+            if item['NOME_ARQUIVO'] in file:
+                try:
+                    shutil.copy(file, full_path)
+                    item.update({"COPIADO" : "SIM"})
+                except: #Se o arquivo já existir no destino, pular.
+                    print(f"did not copy {file}")
+                    item.update({"COPIADO" : "NÃO"})
+    return lista_hierarquizada
+
+
+def copiar_arquivos_solda_avulsos(acervo, destino, lista_avulsos):
+    arquivos_acervo = listar_desenhos(acervo)
+    # Primeiro, criar o caminho à pasta destino.
+    # Em seguida, coletar o que precisa ser copiado.
+    for file in arquivos_acervo:
+        for item in lista_avulsos:
+            if item['NOME_ARQUIVO'] in file:
+                try:
+                    shutil.copy(file, destino)
+                    item.update({"COPIADO" : "SIM"})
+                except: #Se o arquivo já existir no destino, pular.
+                    item.update({"COPIADO" : "NÃO"})
+    return lista_avulsos
 
 
 def solve_internal_welds(lista):
