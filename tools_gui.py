@@ -90,7 +90,3 @@ def abrir_GUI():
     lista, destino, acervo = gui.get_paths()
     pastas_de_solda, solda_usinados_externa = gui.get_toggle_values()
     return lista, destino, acervo, pastas_de_solda, solda_usinados_externa
-
-gui = abrir_GUI()
-for i in gui:
-    print(i)
