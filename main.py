@@ -4,7 +4,6 @@ import pandas as pd
 
 if __name__ == "__main__":
     # Abertura, importação e limpeza de csv do PDM.
-    
     path = "./test_files/"
     file_path = tpc.test_file_path("wtf.csv")
     tpc.hex_cleanup(file_path)
@@ -30,6 +29,7 @@ if __name__ == "__main__":
         tb.copiar_arquivos_solda_conjuntos(acervo, destino, conjunto)
     tb.copiar_arquivos_solda_avulsos(acervo, destino, lista_avulsos)
     
+    lista_billing = tb.add_categories(lista_billing)
     lista_billing_solved = tb.solve_hierarchy_in_list(lista_billing + lista_avulsos)
     
     df2 = pd.DataFrame.from_dict(lista_billing_solved)

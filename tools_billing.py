@@ -69,6 +69,8 @@ def billing_folders_and_list(lista):
     for j in tolerated_SAPs:
         k = [i for i in lista if i not in adicionados and str(i['SAP']).startswith(j)]
         avulsos.extend(k)
+    for item in avulsos:
+        item.update({"CATEGORIA" : "Avulso"})
         
     return conjuntos, avulsos, adicionados
 
@@ -135,6 +137,25 @@ def solve_internal_welds(lista_hierarquizada):
             lista_filtrada.append(item)
             
     return lista_filtrada
+
+
+def add_categories(lista_hierarquizada):
+    tolerated_SAPs = ["110-", "120-", "140-"]
+    for item in lista_hierarquizada:
+        if type(item) == list:
+            if item[0]['TIPO DO ITEM'] == "Soldado Internamente":
+                add_categories(item)
+            else:
+                item[0].update({"CATEGORIA" : "Conjunto"})
+        else:
+            if any(item["SAP"].startswith(i) for i in tolerated_SAPs):
+                item.update({"CATEGORIA" : "Avulso"})
+            elif item["SAP"].startswith("520-"):
+                item.update({"CATEGORIA" : "Solda Interna"})
+            else:
+                item.update({"CATEGORIA" : "Kit Solda"})
+    return lista_hierarquizada
+
 
 def separate_weld_kit_items(lista_hierarquizada):
     weld_kit = [item for item in lista_hierarquizada if type(item) != list]
