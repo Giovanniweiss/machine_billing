@@ -161,3 +161,8 @@ def separate_weld_kit_items(lista_hierarquizada):
     weld_kit = [item for item in lista_hierarquizada if type(item) != list]
     filtered_lista = [item for item in lista_hierarquizada if item not in weld_kit]
     return filtered_lista, weld_kit
+
+
+def get_only_loose_items_from_weld_kit(weld_kit):
+    loose_items = [item for item in weld_kit if item["CATEGORIA"] == "Avulso"]
+    return loose_items

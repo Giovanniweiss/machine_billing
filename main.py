@@ -36,12 +36,13 @@ if __name__ == "__main__":
     if solda_usinados_interna:
         lista_billing = tb.solve_internal_welds(lista_billing)
         lista_billing, weld_kit = tb.separate_weld_kit_items(lista_billing)
+        loose_items = tb.get_only_loose_items_from_weld_kit(weld_kit)
     if pastas_de_solda:
         for conjunto in lista_billing:
             tb.copiar_arquivos_solda_conjuntos(acervo, destino, conjunto)
-        tb.copiar_arquivos_solda_avulsos(acervo, destino, lista_avulsos)
+        tb.copiar_arquivos_solda_avulsos(acervo, destino, lista_avulsos + loose_items)
     
-    lista_billing_solved = tb.solve_hierarchy_in_list(lista_billing + lista_avulsos)
+    lista_billing_solved = tb.solve_hierarchy_in_list(lista_billing + lista_avulsos + loose_items)
     
     # Exportar Planilha
     df1 = pd.DataFrame.from_dict(data_list)
