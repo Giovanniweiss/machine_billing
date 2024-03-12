@@ -44,10 +44,10 @@ class GUI:
         browse_button3 = tk.Button(self.root, text="Buscar", command=self.browse_path3)
         browse_button3.pack()
 
-        toggle_button3 = tk.Checkbutton(self.root, text="Copiar Desenhos", variable=self.toggle_var3)
+        toggle_button3 = tk.Checkbutton(self.root, text="Criar pastas de solda?", variable=self.toggle_var3)
         toggle_button3.pack()
 
-        toggle_button4 = tk.Checkbutton(self.root, text="Pasta de Solda", variable=self.toggle_var4)
+        toggle_button4 = tk.Checkbutton(self.root, text="Usinados soldados internamente?", variable=self.toggle_var4)
         toggle_button4.pack()
 
         run_button = tk.Button(self.root, text="Rodar", command=self.run_program)
@@ -88,5 +88,5 @@ def abrir_GUI():
     root.geometry("500x300")
     root.mainloop()
     lista, destino, acervo = gui.get_paths()
-    pastas_de_solda, solda_usinados_externa = gui.get_toggle_values()
-    return lista, destino, acervo, pastas_de_solda, solda_usinados_externa
+    pastas_de_solda, solda_usinados_interna = gui.get_toggle_values()
+    return lista, destino, acervo, pastas_de_solda, solda_usinados_interna
