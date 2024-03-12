@@ -20,7 +20,7 @@ if __name__ == "__main__":
     destino = r"./Destino"
 
     # Processamento 
-    lista_billing, lista_avulsos = tb.billing_folders_and_list(data_list)
+    lista_billing, lista_avulsos, adicionados = tb.billing_folders_and_list(data_list)
     only_external_welds = False
     if only_external_welds:
         lista_billing = tb.solve_internal_welds(lista_billing)

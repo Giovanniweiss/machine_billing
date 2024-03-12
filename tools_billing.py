@@ -21,8 +21,6 @@ def solve_hierarchy_in_list(lista):
 def billing_folders_and_list(lista):
     '''
     Input:
-        Acervo - local onde os arquivos estão armazenados. Deve ser um string com endereço de pasta.
-        Destino - local onde serão criadas as pastas de orçamento. Deve ser um string com endereço de pasta.
         Lista - lista de materiais recuada conforme gerada pelo PDM, formatada como lista de dicionários. Processar com hex_cleanup antes.
     
     Output esperado:
@@ -32,20 +30,20 @@ def billing_folders_and_list(lista):
     '''
     
     # Função recursiva. Separa a hierarquia de soldas na lista de acordo com preestabelecido pela coluna nível.
-    niveis_adicionados = []
     def rec_hierarquizar(conjunto, itens_do_conjunto):
         adicionados = []
         output = []
+        adicionados.append(conjunto)
         output.append(conjunto)
         for i in itens_do_conjunto:
-            if str(i["SAP"]).startswith("520-"):
+            if str(i["SAP"]).startswith("520-") and i not in adicionados:
                 # Filter out the items already added to the output
                 itens_do_subconjunto = [item for item in itens_do_conjunto if item["Nível"].startswith(i["Nível"] + ".") and item != i and item not in adicionados]
                 a, b = rec_hierarquizar(i, itens_do_subconjunto)
                 if itens_do_subconjunto != []:
                     output.append(a)
                     adicionados.extend(b)
-            elif i not in adicionados:
+            elif i not in adicionados:  
                 output.append(i)
                 adicionados.append(i)
         return output, adicionados
@@ -59,12 +57,13 @@ def billing_folders_and_list(lista):
     adicionados = []
     
     for index, linha in enumerate(conjuntos):
-        if linha not in adicionados:
+        if not any(linha["Nível"] == i["Nível"] for i in adicionados):
             itens_no_conjunto = [item for item in lista if item["Nível"].startswith(linha["Nível"] + ".") and item != linha]
             conjuntos[index], b = rec_hierarquizar(linha, itens_no_conjunto)
             adicionados.extend(b)
         else:
             conjuntos[index] = None
+            
         
     conjuntos = [i for i in conjuntos if i != None]
     avulsos = []
@@ -73,7 +72,7 @@ def billing_folders_and_list(lista):
         k = [i for i in lista if i not in adicionados and str(i['SAP']).startswith(j)]
         avulsos.extend(k)
         
-    return conjuntos, avulsos
+    return conjuntos, avulsos, adicionados
 
 
 # Copiar os arquivos às pastas de destino, recursivamente.
