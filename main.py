@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     # Processamento 
     lista_billing, lista_avulsos = tb.billing_folders_and_list(data_list)
-    only_external_welds = True
+    only_external_welds = False
     if only_external_welds:
         lista_billing = tb.solve_internal_welds(lista_billing)
         lista_billing, weld_kit = tb.separate_weld_kit_items(lista_billing)
@@ -29,7 +29,7 @@ if __name__ == "__main__":
         tb.copiar_arquivos_solda_conjuntos(acervo, destino, conjunto)
     tb.copiar_arquivos_solda_avulsos(acervo, destino, lista_avulsos)
     
-    lista_billing_solved = tb.solve_hierarchy_in_list(lista_billing + lista_avulsos + weld_kit)
+    lista_billing_solved = tb.solve_hierarchy_in_list(lista_billing + lista_avulsos)
     
     df2 = pd.DataFrame.from_dict(lista_billing_solved)
     df2.to_excel(tpc.test_file_path('players2.xlsx'), index=True)

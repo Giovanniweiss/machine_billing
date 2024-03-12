@@ -31,6 +31,8 @@ def billing_folders_and_list(lista):
         Exportar uma lista de orçamento.
     '''
     
+    # Função recursiva. Separa a hierarquia de soldas na lista de acordo com preestabelecido pela coluna nível.
+    niveis_adicionados = []
     def rec_hierarquizar(conjunto, itens_do_conjunto):
         adicionados = []
         output = []
@@ -76,8 +78,7 @@ def billing_folders_and_list(lista):
 
 # Copiar os arquivos às pastas de destino, recursivamente.
 def copiar_arquivos_solda_conjuntos(acervo, destino, lista_hierarquizada = None):
-    if lista_hierarquizada == None:
-        return 0
+
     arquivos_acervo = listar_desenhos(acervo)
     # Primeiro, criar o caminho à pasta destino.
     # Em seguida, coletar o que precisa ser copiado.
@@ -92,7 +93,7 @@ def copiar_arquivos_solda_conjuntos(acervo, destino, lista_hierarquizada = None)
     copiar = []
     for item in lista_hierarquizada:
         if isinstance(item, list):
-            copiar_arquivos_solda_conjuntos(item, full_path)
+            copiar_arquivos_solda_conjuntos(acervo, full_path, item)
         else:
             copiar.append(item)
         
@@ -122,15 +123,6 @@ def copiar_arquivos_solda_avulsos(acervo, destino, lista_avulsos):
                 except: #Se o arquivo já existir no destino, pular.
                     item.update({"COPIADO" : "NÃO"})
     return lista_avulsos
-
-
-def solve_assemblies(lista_hierarquizada):
-    lista_filtrada = []
-    for item in lista_hierarquizada:
-        if type(item) == list:
-            lista_filtrada.extend(solve_assemblies(item))
-        else:
-            lista_filtrada.append(item)
             
 
 def solve_internal_welds(lista_hierarquizada):
