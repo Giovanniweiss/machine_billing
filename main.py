@@ -21,8 +21,9 @@ if __name__ == "__main__":
 
     # Processamento 
     lista_billing, lista_avulsos, adicionados = tb.billing_folders_and_list(data_list)
-    only_external_welds = False
+    only_external_welds = True
     if only_external_welds:
+        destino = r"./Destino_int"
         lista_billing = tb.solve_internal_welds(lista_billing)
         lista_billing, weld_kit = tb.separate_weld_kit_items(lista_billing)
     for conjunto in lista_billing:

@@ -18,15 +18,12 @@ def solve_hierarchy_in_list(lista):
     return output
 
 
-def billing_folders_and_list(lista):
+# A partir da lista recuada do PDM, gera a lista de orçamento.
+def billing_folders_and_list(lista):    
     '''
-    Input:
-        Lista - lista de materiais recuada conforme gerada pelo PDM, formatada como lista de dicionários. Processar com hex_cleanup antes.
+    Input: Lista de dicionários.
     
-    Output esperado:
-        Diversas pastas, cada uma com nome em formato SAP - SÉRIE - TIPO DE ITEM, contendo os arquivos .PDF, .DXF e .STEP dos arquivos do projeto.
-        Se aplicável, devem haver subpastas também, de acordo com a estrutura hierarquica definida em projeto.
-        Exportar uma lista de orçamento.
+    Output: Lista de dicionários filtrada com somente soldas e itens associados e disposta em sublistas hierarquicas.
     '''
     
     # Função recursiva. Separa a hierarquia de soldas na lista de acordo com preestabelecido pela coluna nível.
@@ -56,6 +53,7 @@ def billing_folders_and_list(lista):
     conjuntos = [linha for linha in lista if str(linha["SAP"]).startswith("520-")]
     adicionados = []
     
+    # Resolver os conjuntos e criar hierarquias.
     for index, linha in enumerate(conjuntos):
         if not any(linha["Nível"] == i["Nível"] for i in adicionados):
             itens_no_conjunto = [item for item in lista if item["Nível"].startswith(linha["Nível"] + ".") and item != linha]
@@ -63,9 +61,9 @@ def billing_folders_and_list(lista):
             adicionados.extend(b)
         else:
             conjuntos[index] = None
-            
-        
     conjuntos = [i for i in conjuntos if i != None]
+    
+    # Localizar itens avulsos.
     avulsos = []
     tolerated_SAPs = ["110-", "120-", "140-"]
     for j in tolerated_SAPs:
@@ -77,7 +75,6 @@ def billing_folders_and_list(lista):
 
 # Copiar os arquivos às pastas de destino, recursivamente.
 def copiar_arquivos_solda_conjuntos(acervo, destino, lista_hierarquizada = None):
-
     arquivos_acervo = listar_desenhos(acervo)
     # Primeiro, criar o caminho à pasta destino.
     # Em seguida, coletar o que precisa ser copiado.
@@ -103,7 +100,7 @@ def copiar_arquivos_solda_conjuntos(acervo, destino, lista_hierarquizada = None)
                 try:
                     shutil.copy(file, full_path)
                     item.update({"COPIADO" : "SIM"})
-                except: #Se o arquivo já existir no destino, pular.
+                except:
                     print(f"did not copy {file}")
                     item.update({"COPIADO" : "NÃO"})
     return lista_hierarquizada
@@ -111,15 +108,13 @@ def copiar_arquivos_solda_conjuntos(acervo, destino, lista_hierarquizada = None)
 
 def copiar_arquivos_solda_avulsos(acervo, destino, lista_avulsos):
     arquivos_acervo = listar_desenhos(acervo)
-    # Primeiro, criar o caminho à pasta destino.
-    # Em seguida, coletar o que precisa ser copiado.
     for file in arquivos_acervo:
         for item in lista_avulsos:
             if item['NOME_ARQUIVO'] in file:
                 try:
                     shutil.copy(file, destino)
                     item.update({"COPIADO" : "SIM"})
-                except: #Se o arquivo já existir no destino, pular.
+                except:
                     item.update({"COPIADO" : "NÃO"})
     return lista_avulsos
             
