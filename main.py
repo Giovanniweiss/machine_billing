@@ -7,6 +7,9 @@ import os, datetime, shutil
 if __name__ == "__main__":
     # Obter informações do usuário.
     lista, destino, acervo, pastas_de_solda, solda_usinados_interna = tg.abrir_GUI()
+    if lista == "" or destino == "" or acervo == "":
+        print("Input inválido.")
+        exit()
     
     # Criar pastas conforme necessário.
     current_time = datetime.datetime.now()
@@ -23,13 +26,13 @@ if __name__ == "__main__":
     if data_list is not None:
         for i in range(min(5, len(data_list))):
             print(data_list[i])
-    df = pd.DataFrame.from_dict(data_list)
-    filename1 = current_time + '_planilha_original.xlsx'
-    df.to_excel(filename1, index=True)
-    shutil.move(filename1, os.path.join(destino, filename1))
-
+    
     # Processamento 
     lista_billing, lista_avulsos = tb.billing_folders_and_list(data_list)
+    lista_billing = tb.add_categories(lista_billing)
+    lista_macro_solved = tb.solve_hierarchy_in_list(lista_billing + lista_avulsos)
+    
+    # Processamento Condicional
     if solda_usinados_interna:
         lista_billing = tb.solve_internal_welds(lista_billing)
         lista_billing, weld_kit = tb.separate_weld_kit_items(lista_billing)
@@ -37,9 +40,19 @@ if __name__ == "__main__":
         for conjunto in lista_billing:
             tb.copiar_arquivos_solda_conjuntos(acervo, destino, conjunto)
         tb.copiar_arquivos_solda_avulsos(acervo, destino, lista_avulsos)
-    lista_billing = tb.add_categories(lista_billing)
+    
     lista_billing_solved = tb.solve_hierarchy_in_list(lista_billing + lista_avulsos)
-    df2 = pd.DataFrame.from_dict(lista_billing_solved)
+    
+    # Exportar Planilha
+    df1 = pd.DataFrame.from_dict(data_list)
+    df2 = pd.DataFrame.from_dict(lista_macro_solved)
+    df3 = pd.DataFrame.from_dict(lista_billing_solved)
     filename2 = current_time + '_lista_de_orcamento.xlsx'
-    df2.to_excel(filename2, index=True)
+    Sheet1 = "Lista Original"
+    Sheet2 = "Lista Macro"
+    Sheet3 = "Lista de Orçamento"
+    with pd.ExcelWriter(filename2) as writer:
+        df1.to_excel(writer, sheet_name=Sheet1, index=True)
+        df2.to_excel(writer, sheet_name=Sheet2, index=True)
+        df3.to_excel(writer, sheet_name=Sheet3, index=True)
     shutil.move(filename2, os.path.join(destino, filename2))
