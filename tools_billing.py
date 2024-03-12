@@ -18,7 +18,7 @@ def solve_hierarchy_in_list(lista):
     return output
 
 
-def billing_folders_and_list(acervo, destino, lista):
+def billing_folders_and_list(lista):
     '''
     Input:
         Acervo - local onde os arquivos estão armazenados. Deve ser um string com endereço de pasta.
@@ -47,9 +47,6 @@ def billing_folders_and_list(acervo, destino, lista):
                 output.append(i)
                 adicionados.append(i)
         return output, adicionados
-    
-    # Obter arquivos do acervo.
-    arquivos_acervo = listar_desenhos(acervo)
     
     # Gerar nomes.
     for item in lista:
@@ -127,6 +124,33 @@ def copiar_arquivos_solda_avulsos(acervo, destino, lista_avulsos):
     return lista_avulsos
 
 
-def solve_internal_welds(lista):
-    
-    return 1
+def solve_assemblies(lista_hierarquizada):
+    lista_filtrada = []
+    for item in lista_hierarquizada:
+        if type(item) == list:
+            lista_filtrada.extend(solve_assemblies(item))
+        else:
+            lista_filtrada.append(item)
+            
+
+def solve_internal_welds(lista_hierarquizada):
+    '''
+    Função recursiva que deve acessar os conjuntos e "dissolver" aqueles que são Solda Interna.
+    Elementos dissolvidos são movidos à montagem superior.
+    '''
+    lista_filtrada = []
+    for item in lista_hierarquizada:
+        if type(item) == list:
+            if item[0]['TIPO DO ITEM'] == "Soldado Internamente":
+                lista_filtrada.extend(solve_internal_welds(item))
+            else:
+                lista_filtrada.append(item)
+        else:
+            lista_filtrada.append(item)
+            
+    return lista_filtrada
+
+def separate_weld_kit_items(lista_hierarquizada):
+    weld_kit = [item for item in lista_hierarquizada if type(item) != list]
+    filtered_lista = [item for item in lista_hierarquizada if item not in weld_kit]
+    return filtered_lista, weld_kit
