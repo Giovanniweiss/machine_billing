@@ -124,3 +124,8 @@ def billing_folders_and_list(acervo, destino, lista):
     copiar_arquivos_solda_avulsos(avulsos, destino)
         
     return conjuntos + avulsos
+
+
+def solve_internal_welds(lista):
+    
+    return 1
