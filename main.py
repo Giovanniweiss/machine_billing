@@ -38,7 +38,7 @@ if __name__ == "__main__":
     
     # Processamento Condicional
     lista_billing_solda_iterna = tb.solve_internal_welds(lista_billing)
-    lista_billing_solda_iterna, weld_kit = tb.separate_weld_kit_items(lista_billing)
+    lista_billing_solda_iterna, weld_kit = tb.separate_weld_kit_items(lista_billing_solda_iterna)
     loose_items = tb.get_only_loose_items_from_weld_kit(weld_kit)
     if solda_usinados_interna:
         lista_billing = lista_billing_solda_iterna
