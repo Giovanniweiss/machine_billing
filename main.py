@@ -32,6 +32,7 @@ if __name__ == "__main__":
         exit()
     
     # Processamento 
+    data_list = tb.correct_qty_in_assemblies(data_list)
     lista_billing, lista_avulsos = tb.billing_folders_and_list(data_list)
     lista_billing = tb.add_categories(lista_billing)
     lista_macro_solved = tb.solve_hierarchy_in_list(lista_billing + lista_avulsos)

@@ -166,3 +166,13 @@ def separate_weld_kit_items(lista_hierarquizada):
 def get_only_loose_items_from_weld_kit(weld_kit):
     loose_items = [item for item in weld_kit if item["CATEGORIA"] == "Avulso"]
     return loose_items
+
+
+def correct_qty_in_assemblies(lista):
+    montagens = [linha for linha in lista if str(linha["SAP"]).startswith("800-") or str(linha["SAP"]) == ""]
+    for item in montagens:
+        for subitem in lista:
+            if subitem["Nível"].startswith(item["Nível"] + ".") and item != subitem:
+                subitem["QTD"] = subitem["QTD"] * item["QTD"]
+                
+    return lista
