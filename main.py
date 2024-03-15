@@ -32,15 +32,30 @@ if __name__ == "__main__":
         exit()
     
     # Processamento 
-    data_list = tb.correct_qty_in_assemblies(data_list)
-    lista_billing, lista_avulsos = tb.billing_folders_and_list(data_list)
+    # Corrige quantidades dentro de montagens.
+    data_list_adjusted = tb.correct_qty_in_assemblies(data_list)
+    # Cria uma lista com sublistas de soldas e uma lista com avulsos.
+    lista_billing, lista_avulsos = tb.billing_folders_and_list(data_list_adjusted)
+    # Adiciona categoria a todos os elementos.
     lista_billing = tb.add_categories(lista_billing)
+    # Resolve hierarquias, resultando em apenas uma lista resultante.
+    # Essa lista pode ser usada para gerar a estrutura pela planilha macro.
     lista_macro_solved = tb.solve_hierarchy_in_list(lista_billing + lista_avulsos)
     
     # Processamento Condicional
+    # Gera uma lista de listas de soldas compradas somente + itens avulsos + kit solda.
     lista_billing_solda_iterna = tb.solve_internal_welds(lista_billing)
+    # Separa da lista acima o kit solda.
     lista_billing_solda_iterna, weld_kit = tb.separate_weld_kit_items(lista_billing_solda_iterna)
+    # Do Kit Solda, separa somente os avulsos.
     loose_items = tb.get_only_loose_items_from_weld_kit(weld_kit)
+    # Remover desenhos de solda interna.
+    weld_kit = tb.remove_int_welds_from_weld_kit(weld_kit)
+    
+    # lista_billing_solda_iterna = lista de orçamento com solda interna, sem avulsos.
+    # lista_billing = lista de orçamento contendo todas as soldas internas também.
+    
+    # Se o usuário vai fazer solda interna, 
     if solda_usinados_interna:
         lista_billing = lista_billing_solda_iterna
     if pastas_de_solda:
@@ -48,7 +63,10 @@ if __name__ == "__main__":
             tb.copiar_arquivos_solda_conjuntos(acervo, destino, conjunto)
         tb.copiar_arquivos_solda_avulsos(acervo, destino, lista_avulsos + loose_items)
     
-    lista_billing_solved = tb.solve_hierarchy_in_list(lista_billing + lista_avulsos + loose_items)
+    if solda_usinados_interna:
+        lista_billing_solved = tb.solve_hierarchy_in_list(lista_billing_solda_iterna + lista_avulsos + loose_items)
+    else:
+        lista_billing_solved = tb.solve_hierarchy_in_list(lista_billing_solda_iterna + lista_avulsos + weld_kit)
     
     # Exportar Planilha
     df1 = pd.DataFrame.from_dict(data_list)

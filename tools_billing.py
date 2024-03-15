@@ -174,5 +174,9 @@ def correct_qty_in_assemblies(lista):
         for subitem in lista:
             if subitem["Nível"].startswith(item["Nível"] + ".") and item != subitem:
                 subitem["QTD"] = subitem["QTD"] * item["QTD"]
-                
-    return lista
+    lista_sem_montagens = [item for item in lista if item not in montagens]
+    return lista_sem_montagens
+
+
+def remove_int_welds_from_weld_kit(weld_kit):
+    return [item for item in weld_kit if item["CATEGORIA"] != "Solda Interna"]
